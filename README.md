@@ -32,7 +32,7 @@ BloodHound is a powerful tool used for analyzing and visualizing complex active 
 1. Clone the repository:
 
 ```
-git clone https://github.com/your-username/Powner.git
+git clone https://github.com/TheProtyro/Powner.git
 ```
 
 2. Install the required Python packages:
