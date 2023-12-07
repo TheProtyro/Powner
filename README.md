@@ -1,4 +1,4 @@
-# Powner
+# Powner 🔥
 
 Powner is a tool designed to automate the process of updating the owned status in Neo4j BloodHound based on a list of users.
 
