@@ -18,7 +18,7 @@ BloodHound is a powerful tool used for analyzing and visualizing complex active 
 
 ## Features
 
-- Efficiently sets users as owned in BloodHound.
+- Efficiently sets users and groups as owned in BloodHound.
 - Supports both User and Computer accounts.
 - Command-line interface for easy integration into workflows.
 
@@ -53,13 +53,13 @@ driver = GraphDatabase.driver(uri, auth=("neo4j", "neo4j"), encrypted=False)
 ```
 usage: Powner.py [-h] -d DOMAIN -f FILE
 
-Easily set users as owned in BloodHound 🐕
+Easily set users and groups as owned in BloodHound 🐕
 
 options:
   -h, --help            show this help message and exit
   -d DOMAIN, --domain DOMAIN
                         Specify the target domain
-  -f FILE, --file FILE  Provide the path to the file containing the list of users
+  -f FILE, --file FILE  Provide the path to the file containing the list of users and groups
 ```
 
 ## Contributing

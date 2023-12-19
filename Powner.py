@@ -14,17 +14,17 @@ BLUE = '\033[34m'
 RESET = '\033[0m'
 
 def print_banner():
-    print("\n" + BLUE + "Powner.py v1.0 - by @Protyro" + RESET + "\n")
+    print("\n" + BLUE + "Powner.py v1.1 - by @Protyro" + RESET + "\n")
 
-def read_users_file(file_path):
-    users_owned = []
-    print('[>] Reading users file')
-    
+def read_entries_file(file_path):
+    entries_owned = []
+    print('[>] Reading entries file')
+
     try:
-        with open(file_path, 'r') as usersfile:
-            for user in usersfile:
-                users_owned.append(user.strip())
-        return users_owned
+        with open(file_path, 'r') as entries_file:
+            for entry in entries_file:
+                entries_owned.append(entry.strip())
+        return entries_owned
     except FileNotFoundError:
         print(RED + f"[-] File not found: {file_path}" + RESET)
         exit(1)
@@ -32,7 +32,7 @@ def read_users_file(file_path):
 def connect_to_neo4j():
     uri = "bolt://localhost:7687/"
     print('[>] Connecting to Neo4j')
-    
+
     try:
         driver = GraphDatabase.driver(uri, auth=("neo4j", "neo4j"), encrypted=False)
         return driver
@@ -46,47 +46,41 @@ def connect_to_neo4j():
         print("[-] Unexpected error with Neo4J")
         exit(1)
 
-def execute_queries(tx, users_owned, domain):
+def execute_queries(tx, entries_owned, domain):
     print('[>] Executing queries')
-    
-    for user in users_owned:
-        if user[-1] == "$":
-            user_owned = user[:-1].upper() + "." + domain
-            account_type = "Computer"
-        else:
-            user_owned = user.upper() + "@" + domain
-            account_type = "User"
 
+    for entry in entries_owned:
+        entry_upper = entry.upper() + "@" + domain
         result = tx.run(
-            f'MATCH (c:{account_type} {{name:"{user_owned}"}}) RETURN c'
+            f'MATCH (c {{name:"{entry_upper}"}}) RETURN c'
         ).single()
 
         if result is not None and result["c"] is not None and result["c"].get("owned") in (False, None):
             result = tx.run(
-                f'MATCH (c:{account_type} {{name:"{user_owned}"}}) SET c.owned=True RETURN c.name AS name'
+                f'MATCH (c {{name:"{entry_upper}"}}) SET c.owned=True RETURN c.name AS name'
             )
-            print(GREEN + f"   [+] Node {user_owned} successfully set as owned in BloodHound" + RESET)
+            print(GREEN + f"   [+] Node {entry_upper} successfully set as owned in BloodHound" + RESET)
         else:
-            print(RED + f"   [-] No result or already owned for user {user_owned}" + RESET)
+            print(RED + f"   [-] No result or already owned for entry {entry_upper}" + RESET)
 
 def main():
     print_banner()
 
-    parser = argparse.ArgumentParser(description="Easily set users as owned in BloodHound 🐕")
+    parser = argparse.ArgumentParser(description="Easily set users and groups as owned in BloodHound 🐕")
     parser.add_argument("-d", "--domain", help="Specify the target domain", type=str, required=True)
-    parser.add_argument("-f", "--file", help="Provide the path to the file containing the list of users", type=str, required=True)
+    parser.add_argument("-f", "--file", help="Provide the path to the file containing the list of users and groups", type=str, required=True)
     args = parser.parse_args()
 
     domain = args.domain.upper()
-    users_file = args.file
+    entries_file = args.file
 
-    users_owned = read_users_file(users_file)
+    entries_owned = read_entries_file(entries_file)
 
     driver = connect_to_neo4j()
 
     with driver.session() as session:
         with session.begin_transaction() as tx:
-            execute_queries(tx, users_owned, domain)
+            execute_queries(tx, entries_owned, domain)
 
     driver.close()
 
